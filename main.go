@@ -23,8 +23,9 @@ func main() {
 
 func StartNew() {
 	// 生成所有可能的长度为 1 的字母单词
-	domains := GenerateDomains(4, ".com")
+	domains := GenerateDomains(1, "", ".com")
 	tasks := []engine.Task{}
+	fmt.Println("these domain will be checked: ", domains)
 
 	for i := 0; i < len(domains); i++ {
 		index := i
@@ -51,20 +52,14 @@ func StartNew() {
 		})
 	}
 
+	var wg sync.WaitGroup
+
 	engineMain := engine.ConcurrentQueue{
 		Scheduler:   &scheduler.QueueScheduler{},
-		WorkerCount: 100,
-		SaverChan:   persist.Saver(),
+		WorkerCount: 10,
+		SaverChan:   persist.Saver(&wg),
 	}
-	engineMain.Run(engine.Task{
-		Name: "dns-search-1",
-		Run: func() (engine.TaskResult, error) {
-			return engine.TaskResult{
-				Data:  []string{"a.com", "b.com"},
-				Tasks: tasks,
-			}, nil
-		},
-	})
+	engineMain.Run(&wg, tasks...)
 }
 
 func StartOld() {
@@ -73,7 +68,7 @@ func StartOld() {
 	m := make(map[string]string)
 
 	// 生成所有可能的长度为 1 的字母单词
-	domains := GenerateDomains(1, ".com")
+	domains := GenerateDomains(1, "", ".com")
 
 	// 并行检查所有字母单词的域名是否被注册
 	for _, domain := range domains {
@@ -121,22 +116,22 @@ func StartOld() {
 }
 
 // GenerateDomains 生成所有长度为 n 的字母单词
-func GenerateDomains(n int, suffix string) []string {
+func GenerateDomains(n int, prefix string, suffix string) []string {
 	letters := make([]byte, n) // 初始化一个长度为 n 的字节数组
 	words := []string{}        // 初始化一个空的字符串数组
-	generate(letters, 0, &words, suffix)
+	generate(letters, 0, &words, prefix, suffix)
 	return words
 }
 
 // generate 递归生成所有可能的字母单词
-func generate(letters []byte, pos int, words *[]string, suffix string) {
+func generate(letters []byte, pos int, words *[]string, prefix string, suffix string) {
 	if pos == len(letters) { // 如果已经生成了 n 个字母，则将其添加到字符串数组中
-		*words = append(*words, string(letters)+suffix)
+		*words = append(*words, prefix+string(letters)+suffix)
 		return
 	}
 
 	for i := 0; i < 26; i++ { // 生成所有可能的字母，从 a 到 z
 		letters[pos] = byte('a' + i)
-		generate(letters, pos+1, words, suffix) // 递归生成下一个字母
+		generate(letters, pos+1, words, prefix, suffix) // 递归生成下一个字母
 	}
 }

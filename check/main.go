@@ -77,8 +77,8 @@ func CheckIsDomainAvailableByApi(domain string) bool {
 	}
 
 	resp := Res{}
-	json.Unmarshal(body, &resp)
-	// fmt.Printf("%+v, %+v\n", resp, e)
+	e := json.Unmarshal(body, &resp)
+	fmt.Printf("%+v, %+v\n", resp, e)
 	not := resp.DomainList[0].Status == "error"
 	return !not
 }
