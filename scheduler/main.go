@@ -2,22 +2,21 @@ package scheduler
 
 import "dns-search/engine"
 
-
 //队列版本调度器
 type QueueScheduler struct {
 	//用于传输Request的通道
-	requestChannel chan engine.Request
+	requestChannel chan engine.Task
 	//workers的每个worker的输入通道 这些子输入管道 将共用一个总管道
-	workerInChannel chan chan engine.Request
+	workerInChannel chan chan engine.Task
 }
 
 //提交请求
-func (scheduler *QueueScheduler) SubmitQueue(request engine.Request) {
+func (scheduler *QueueScheduler) SubmitQueue(request engine.Task) {
 	scheduler.requestChannel <- request
 }
 
 //接收worker的已就绪通知 接收通知后会将传入的workerIn输入通道交给调度器要调度的workerIn管道
-func (scheduler *QueueScheduler) WorkerAlreadyQueue(workerIn chan engine.Request) {
+func (scheduler *QueueScheduler) WorkerAlreadyQueue(workerIn chan engine.Task) {
 	scheduler.workerInChannel <- workerIn
 }
 
@@ -25,19 +24,19 @@ func (scheduler *QueueScheduler) WorkerAlreadyQueue(workerIn chan engine.Request
 func (scheduler *QueueScheduler) RunQueue() {
 
 	//生成需要的channel
-	scheduler.requestChannel = make(chan engine.Request)
-	scheduler.workerInChannel = make(chan chan engine.Request)
+	scheduler.requestChannel = make(chan engine.Task)
+	scheduler.workerInChannel = make(chan chan engine.Task)
 
 	go func() {
 		//request队列
-		var requests []engine.Request
+		var requests []engine.Task
 		//workerIn队列
-		var workerIns []chan engine.Request
+		var workerIns []chan engine.Task
 		for {
 			//活跃状态的Request
-			var activeRequest engine.Request
+			var activeRequest engine.Task
 			//就绪状态的workerIn
-			var alreadyWorkerIn chan engine.Request
+			var alreadyWorkerIn chan engine.Task
 			//从队列中读取第一个request和workerIn
 			if len(requests) > 0 && len(workerIns) > 0 {
 				activeRequest = requests[0]
