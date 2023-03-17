@@ -15,7 +15,7 @@ import (
 // isDomainAvailable 检查域名是否被注册
 func CheckByDNS(domain string) bool {
 	txt, err := net.LookupHost(domain)
-	// fmt.Println(txt, err)
+	fmt.Println(txt, err)
 	if err != nil {
 		return true // 域名未被注册
 	}

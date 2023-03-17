@@ -14,6 +14,13 @@ import (
 	"sync"
 )
 
+const (
+	DOMAIN_LENGTH = 1
+	DOMAIN_PREFIX = ""
+	DOMAIN_SUFFIX = ".com"
+	CONCURRENT    = 100
+)
+
 //访问间隔
 var rateLimiter = time.Tick(300 * time.Millisecond)
 
@@ -22,8 +29,8 @@ func main() {
 }
 
 func StartNew() {
-	// 生成所有可能的长度为 1 的字母单词
-	domains := GenerateDomains(1, "", ".com")
+	// 生成所有可能的长度为 DOMAIN_LENGTH 的字母单词
+	domains := GenerateDomains(DOMAIN_LENGTH, DOMAIN_PREFIX, DOMAIN_SUFFIX)
 	tasks := []engine.Task{}
 	fmt.Println("these domain will be checked: ", domains)
 
@@ -44,6 +51,7 @@ func StartNew() {
 				if !dnsPass {
 					return result, nil
 				}
+				// result.Data = append(result.Data, d)
 				if available := check.CheckIsDomainAvailableByApi(d); available {
 					result.Data = append(result.Data, d)
 				}
@@ -56,7 +64,7 @@ func StartNew() {
 
 	engineMain := engine.ConcurrentQueue{
 		Scheduler:   &scheduler.QueueScheduler{},
-		WorkerCount: 10,
+		WorkerCount: CONCURRENT,
 		SaverChan:   persist.Saver(&wg),
 	}
 	engineMain.Run(&wg, tasks...)
