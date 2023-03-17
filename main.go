@@ -8,10 +8,14 @@ import (
 	"encoding/json"
 	"fmt"
 	"strconv"
+	"time"
 
 	"strings"
 	"sync"
 )
+
+//访问间隔
+var rateLimiter = time.Tick(300 * time.Millisecond)
 
 func main() {
 	StartNew()
@@ -19,24 +23,37 @@ func main() {
 
 func StartNew() {
 	// 生成所有可能的长度为 1 的字母单词
-	domains := GenerateDomains(1, ".com")
+	domains := GenerateDomains(4, ".com")
 	tasks := []engine.Task{}
 
 	for i := 0; i < len(domains); i++ {
+		index := i
 		tasks = append(tasks, engine.Task{
 			Name: "dns-search-" + strconv.Itoa(i),
 			Run: func() (engine.TaskResult, error) {
-				return engine.TaskResult{
-					Data:  []string{domains[i]},
-					Tasks: nil,
-				}, nil
+				//限制执行速率
+				<-rateLimiter
+				d := domains[index]
+				result := engine.TaskResult{
+					Data:  []string{},
+					Tasks: []engine.Task{},
+				}
+
+				dnsPass := check.CheckByDNS(d)
+				if !dnsPass {
+					return result, nil
+				}
+				if available := check.CheckIsDomainAvailableByApi(d); available {
+					result.Data = append(result.Data, d)
+				}
+				return result, nil
 			},
 		})
 	}
 
 	engineMain := engine.ConcurrentQueue{
 		Scheduler:   &scheduler.QueueScheduler{},
-		WorkerCount: 6,
+		WorkerCount: 100,
 		SaverChan:   persist.Saver(),
 	}
 	engineMain.Run(engine.Task{

@@ -15,7 +15,7 @@ import (
 // isDomainAvailable 检查域名是否被注册
 func CheckByDNS(domain string) bool {
 	txt, err := net.LookupHost(domain)
-	fmt.Println(txt, err)
+	// fmt.Println(txt, err)
 	if err != nil {
 		return true // 域名未被注册
 	}
@@ -34,8 +34,8 @@ type Res struct {
 		Name   string `json:"name"`
 		Status string `json:"status"`
 	} `json:"domainList"`
-	UnRegisteredDomainList []any    `json:"unRegisteredDomainList"`
-	RegisteredDomainList   []any    `json:"registeredDomainList"`
+	UnRegisteredDomainList []interface{}    `json:"unRegisteredDomainList"`
+	RegisteredDomainList   []interface{}    `json:"registeredDomainList"`
 	ErrorDomainList        []string `json:"errorDomainList"`
 }
 
@@ -77,8 +77,8 @@ func CheckIsDomainAvailableByApi(domain string) bool {
 	}
 
 	resp := Res{}
-	e := json.Unmarshal(body, &resp)
-	fmt.Printf("%+v, %+v\n", resp, e)
+	json.Unmarshal(body, &resp)
+	// fmt.Printf("%+v, %+v\n", resp, e)
 	not := resp.DomainList[0].Status == "error"
 	return !not
 }
