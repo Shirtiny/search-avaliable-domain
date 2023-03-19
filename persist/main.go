@@ -3,6 +3,7 @@ package persist
 import (
 	"encoding/json"
 	"log"
+	"strings"
 	"sync"
 )
 
@@ -26,13 +27,19 @@ func Saver(wg *sync.WaitGroup) (saverChan chan string) {
 			// 以done作为存储结束标志
 			if object == "done" {
 				results := make([]string, len(mp))
+				var sb strings.Builder
 				i := 0
 				for k := range mp {
 					results[i] = k
+					sb.WriteString(k + ",")
 					i++
 				}
 				b, _ := json.Marshal(results)
-				log.Println("total: ", string(b))
+
+				str := sb.String()
+
+				log.Println("json: ", string(b))
+				log.Println("total: ", str[:len(str)-1])
 				wg.Done()
 				break
 			}
