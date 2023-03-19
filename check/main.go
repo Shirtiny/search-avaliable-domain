@@ -1,32 +1,23 @@
 package check
 
 import (
+	"bytes"
+	"encoding/json"
+	"fmt"
 	"io"
 	"mime/multipart"
 	"net"
 	"net/http"
-	"bytes"
-	"encoding/json"
-	"fmt"
-
-	"strings"
 )
 
-// isDomainAvailable 检查域名是否被注册
 func CheckByDNS(domain string) bool {
-	txt, err := net.LookupHost(domain)
-	fmt.Println(txt, err)
+	ips, err := net.LookupIP(domain)
+	fmt.Println(ips, err)
 	if err != nil {
-		return true // 域名未被注册
+		return true
 	}
 
-	for _, line := range txt {
-		if strings.Contains(line, "No match for domain") {
-			return true // 域名未被注册
-		}
-	}
-
-	return false // 域名已被注册
+	return false
 }
 
 type Res struct {
@@ -34,9 +25,9 @@ type Res struct {
 		Name   string `json:"name"`
 		Status string `json:"status"`
 	} `json:"domainList"`
-	UnRegisteredDomainList []interface{}    `json:"unRegisteredDomainList"`
-	RegisteredDomainList   []interface{}    `json:"registeredDomainList"`
-	ErrorDomainList        []string `json:"errorDomainList"`
+	UnRegisteredDomainList []interface{} `json:"unRegisteredDomainList"`
+	RegisteredDomainList   []interface{} `json:"registeredDomainList"`
+	ErrorDomainList        []string      `json:"errorDomainList"`
 }
 
 func CheckIsDomainAvailableByApi(domain string) bool {
@@ -79,6 +70,7 @@ func CheckIsDomainAvailableByApi(domain string) bool {
 	resp := Res{}
 	e := json.Unmarshal(body, &resp)
 	fmt.Printf("%+v, %+v\n", resp, e)
-	not := resp.DomainList[0].Status == "error"
-	return !not
+	s := resp.DomainList[0].Status
+	available := s != "registered" && s != "forbid" && (s == "unRegisteredAdd") || (s == "error")
+	return available
 }

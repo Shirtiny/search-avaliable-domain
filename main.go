@@ -17,10 +17,10 @@ import (
 const (
 	DOMAIN_LENGTH = 1
 	DOMAIN_PREFIX = ""
-	DOMAIN_SUFFIX = ".moe"
-	CONCURRENT    = 100
-	RATE_LIMIT    = 1
-	CHECK_BY_API  = false
+	DOMAIN_SUFFIX = ".com"
+	CONCURRENT    = 10
+	RATE_LIMIT    = 500
+	CHECK_BY_API  = true
 )
 
 //访问间隔
