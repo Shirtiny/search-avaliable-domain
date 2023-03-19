@@ -45,11 +45,12 @@ func (scheduler *QueueScheduler) RunQueue(workerTotalCount int, engineDone func(
 				activeTask = tasks[0]
 				alreadyWorkerIn = workerIns[0]
 			} else if len(workerIns) == workerTotalCount {
-				fmt.Println("workerIns 全部空闲")
-				close(scheduler.workerInChannel)
-				close(scheduler.taskChannel)
+				fmt.Println("workerIns 全部空闲, 剩余任务数", len(tasks))
+				// close(scheduler.workerInChannel)
+				// close(scheduler.taskChannel)
 				engineDone()
-				break
+				continue
+
 			}
 
 			select {

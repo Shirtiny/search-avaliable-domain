@@ -26,7 +26,8 @@ type ConcurrentQueue struct {
 	//worker协程数
 	WorkerCount int
 	//存储通道 传输
-	SaverChan chan string
+	SaverChan      chan string
+	TaskResultChan chan TaskResult
 
 	allDone bool
 }
@@ -48,11 +49,11 @@ func (engine *ConcurrentQueue) Run(wg *sync.WaitGroup, tasks ...Task) {
 	engine.Scheduler.RunQueue(engine.WorkerCount, engine.Done)
 
 	//out负责worker输出 传输TaskResult
-	out := make(chan TaskResult)
+	engine.TaskResultChan = make(chan TaskResult)
 
 	//创建workerCount个worker协程
 	for i := 0; i < engine.WorkerCount; i++ {
-		createWorkerQueue(engine.Scheduler, out)
+		createWorkerQueue(engine.Scheduler, engine.TaskResultChan)
 	}
 
 	//将所有task交给调度器 调度器对worker输入
@@ -64,15 +65,16 @@ func (engine *ConcurrentQueue) Run(wg *sync.WaitGroup, tasks ...Task) {
 
 	//处理worker的输出结果
 	for {
-		if engine.allDone {
+
+		//接收输出结果
+		result := <-engine.TaskResultChan
+
+		if len(result.Data) > 0 && result.Data[0] == "done" {
 			fmt.Println("全部任务完成")
 			engine.SendToSaver("done")
 			wg.Wait()
 			break
 		}
-
-		//接收输出结果
-		result := <-out
 
 		//打印解析结果中的objects result.Data
 		for _, data := range result.Data {
@@ -95,7 +97,10 @@ func (engine *ConcurrentQueue) Run(wg *sync.WaitGroup, tasks ...Task) {
 
 // 关闭引擎
 func (engine *ConcurrentQueue) Done() {
-	engine.allDone = true
+	done := TaskResult{
+		Data: []string{"done"},
+	}
+	engine.TaskResultChan <- done
 }
 
 //传入存储通道

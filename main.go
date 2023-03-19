@@ -17,12 +17,14 @@ import (
 const (
 	DOMAIN_LENGTH = 1
 	DOMAIN_PREFIX = ""
-	DOMAIN_SUFFIX = ".com"
+	DOMAIN_SUFFIX = ".moe"
 	CONCURRENT    = 100
+	RATE_LIMIT    = 1
+	CHECK_BY_API  = false
 )
 
 //访问间隔
-var rateLimiter = time.Tick(300 * time.Millisecond)
+var rateLimiter = time.Tick(RATE_LIMIT * time.Millisecond)
 
 func main() {
 	StartNew()
@@ -47,12 +49,15 @@ func StartNew() {
 					Tasks: []engine.Task{},
 				}
 
-				dnsPass := check.CheckByDNS(d)
-				if !dnsPass {
+				available := check.CheckByDNS(d)
+				if !available {
 					return result, nil
 				}
-				// result.Data = append(result.Data, d)
-				if available := check.CheckIsDomainAvailableByApi(d); available {
+
+				if CHECK_BY_API {
+					available = check.CheckIsDomainAvailableByApi(d)
+				}
+				if available {
 					result.Data = append(result.Data, d)
 				}
 				return result, nil
