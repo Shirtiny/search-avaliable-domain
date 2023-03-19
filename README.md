@@ -6,6 +6,7 @@ This is a simple tool to check for available domain names based on the configure
 
 1. Clone this repository
 2. Run `go run main.go`
+3. Results in ./temp/*.txt
 
 ## Configuration
 
@@ -16,6 +17,7 @@ You can modify the following parameters in `main.go`:
 - Domain suffix
 - Concurrency
 - Frequency
+- Check method dns/api
 
 Note that this project is for demonstration purposes only and may have limitations.
 
