@@ -43,18 +43,25 @@ func Saver(wg *sync.WaitGroup) (saverChan chan string) {
 				str := sb.String()
 
 				log.Println("json: ", string(b))
+
+				if len(str) == 0 {
+					fmt.Println("empty results")
+					wg.Done()
+					break
+				}
 				log.Println("total: ", str[:len(str)-1])
 
-				chunks := toChunk(results, 20)
+				chunks := toChunk(results, 500)
 				mkdir("./temp")
 
 				for i, chunk := range chunks {
 					var tsb strings.Builder
 					for _, domain := range chunk {
-						tsb.WriteString(domain + "\n")
+						tsb.WriteString(domain + ",")
 					}
 
 					str := tsb.String()
+
 					writeFile("./temp/", strconv.Itoa(i)+".txt", str[:len(str)-1])
 
 				}

@@ -15,11 +15,11 @@ import (
 )
 
 const (
-	DOMAIN_LENGTH = 3
-	DOMAIN_PREFIX = ""
+	DOMAIN_LENGTH = 1
+	DOMAIN_PREFIX = "hello"
 	DOMAIN_SUFFIX = ".com"
-	CONCURRENT    = 1000
-	RATE_LIMIT    = 10
+	CONCURRENT    = 10000
+	RATE_LIMIT    = 3
 	CHECK_BY_API  = false
 )
 

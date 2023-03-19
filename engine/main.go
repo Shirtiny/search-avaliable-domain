@@ -106,7 +106,7 @@ func (engine *ConcurrentQueue) Done() {
 //传入存储通道
 func (engine *ConcurrentQueue) SendToSaver(data string) {
 	go func(d string) {
-		log.Printf("存储管道输入： %v\n", d)
+		// log.Printf("存储管道输入： %v\n", d)
 		engine.SaverChan <- d
 	}(data)
 }
