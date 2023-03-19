@@ -15,12 +15,12 @@ import (
 )
 
 const (
-	DOMAIN_LENGTH = 1
+	DOMAIN_LENGTH = 3
 	DOMAIN_PREFIX = ""
 	DOMAIN_SUFFIX = ".com"
-	CONCURRENT    = 10
-	RATE_LIMIT    = 500
-	CHECK_BY_API  = true
+	CONCURRENT    = 1000
+	RATE_LIMIT    = 10
+	CHECK_BY_API  = false
 )
 
 //访问间隔
