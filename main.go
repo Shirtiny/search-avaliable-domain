@@ -16,14 +16,14 @@ import (
 
 const (
 	DOMAIN_LENGTH = 1
-	DOMAIN_PREFIX = "hello"
-	DOMAIN_SUFFIX = ".com"
-	CONCURRENT    = 10000
-	RATE_LIMIT    = 3
+	DOMAIN_PREFIX = ""
+	DOMAIN_SUFFIX = "ii.com"
+	CONCURRENT    = 10
+	RATE_LIMIT    = 1000
 	CHECK_BY_API  = false
 )
 
-//访问间隔
+// 访问间隔
 var rateLimiter = time.Tick(RATE_LIMIT * time.Millisecond)
 
 func main() {
@@ -41,8 +41,7 @@ func StartNew() {
 		tasks = append(tasks, engine.Task{
 			Name: "dns-search-" + strconv.Itoa(i),
 			Run: func() (engine.TaskResult, error) {
-				//限制执行速率
-				<-rateLimiter
+
 				d := domains[index]
 				result := engine.TaskResult{
 					Data:  []string{},
@@ -55,6 +54,8 @@ func StartNew() {
 				}
 
 				if CHECK_BY_API {
+					//限制执行速率
+					<-rateLimiter
 					available = check.CheckIsDomainAvailableByApi(d)
 				}
 				if available {
